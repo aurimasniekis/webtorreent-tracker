@@ -1,0 +1,13 @@
+name: webtorrent-tracker
+version: 0.1.0
+
+authors:
+  - Aurimas Niekis <aurimas@niekis.lt>
+
+targets:
+  webtorrent-tracker:
+    main: src/webtorrent-tracker.cr
+
+crystal: 0.22.0
+
+license: MIT
