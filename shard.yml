@@ -4,6 +4,11 @@ version: 0.1.0
 authors:
   - Aurimas Niekis <aurimas@niekis.lt>
 
+dependencies:
+  redis:
+    github: stefanwille/crystal-redis
+    version: ~> 1.8.0
+
 targets:
   webtorrent-tracker:
     main: src/webtorrent-tracker.cr

@@ -1,31 +1,54 @@
 require "./webtorrent-tracker/*"
-require "http/server"
 
 module Webtorrent::Tracker
   SOCKETS = [] of HTTP::WebSocket
 
-  ws_handler = HTTP::WebSocketHandler.new do |socket, context|
-    puts "Socket opened"
-    SOCKETS << socket
+  swarm = Swarm.new(Redis.new)
 
-    unless match = context.request.path.match(/^\/([^\/]+)\/announce$/)
-      socket.send "Invalid url"
-      socket.close
+  ws_handler = HTTP::WebSocketHandler.new do |socket, context|
+    begin
+      socket_context = SocketContext.new(socket, context, swarm)
+    rescue ex : WebTorrentException
+      puts "Error: #{ex.message}"
+
+      socket.send ex.to_json
+      socket.close if ex.close_connection?
+
+      next
     end
 
-    client_id = match.as(Regex::MatchData)[1]
+    puts "Peer #{socket_context.client_id} connected"
 
     socket.on_message do |message|
-      File.write("/tmp/messge.json", message)
-      puts WebsocketMessage.new(client_id, message).inspect
-      # SOCKETS.each { |socket| socket.send "Echo back from server: #{message}" }
+      begin
+       socket_context.on_message message
+      rescue ex : WebTorrentException
+        puts "Error: #{ex.message}"
+
+        puts message
+
+        socket.send ex.to_json
+        socket.close if ex.close_connection?
+      end
     end
 
-    socket.on_close do
-      puts "Socket closed"
-    end
+    # client_id = match.as(Regex::MatchData)[1]
+
+    # socket.on_message do |message|
+    #   begin
+    #     puts WebsocketMessage.new(client_id, message).inspect
+    #   rescue ex : JSON::ParseException
+    #     socket.send WebtorrentError.new(ex).to_json
+    #     socket.close
+    #   end 
+    #   # SOCKETS.each { |socket| socket.send "Echo back from server: #{message}" }
+    # end
+
+    # socket.on_close do
+    #   puts "Socket closed"
+    # end
   end
 
-  server = HTTP::Server.new("0.0.0.0", 3000, [ws_handler])
+  server = HTTPServer.new("0.0.0.0", 3000, [ws_handler])
   server.listen
 end
