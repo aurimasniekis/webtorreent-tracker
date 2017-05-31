@@ -19,7 +19,7 @@ module Webtorrent::Tracker
 
   class Swarm
     def initialize(@redis : Redis)
-      
+
     end
 
     def announce(context : SocketContext, params : WebtorrentMessage)
@@ -43,11 +43,13 @@ module Webtorrent::Tracker
 
       numwant = params.numwant.nil? ? 0_i64 : params.numwant.as(Int64)
 
-      {
-        complete: complete(params),
-        incomplete: incomplete(params),
-        peers: get_peers(params.info_hash.hex, numwant, params.peer_id.hex)
-      }
+      result = {} of String => Int32 | String | Array(Peer)
+
+      result["complete"] = complete(params)
+      result["incomplete"] = incomplete(params)
+      result["peers"] = get_peers(params.info_hash.hex, numwant, params.peer_id.hex)
+
+      result
     end
 
     def announce_started(peer : Peer?, context : SocketContext, params : WebtorrentMessage)
@@ -206,7 +208,7 @@ module Webtorrent::Tracker
 
         if vals.size == 2
           time, peer_id = vals
-          
+
           if Time.epoch(time.to_i) < (Time.now + peer_ttl)
               peer_id
           else

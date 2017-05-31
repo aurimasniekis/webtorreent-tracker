@@ -18,7 +18,7 @@ module Webtorrent::Tracker
     ACTION_SCRAPE = "scrape"
 
     class HashValue
-      property hex : String
+      property hex : String, value : String
       def initialize(@value : String)
         @hex = @value.encode("latin1").hexstring
       end
@@ -41,15 +41,15 @@ module Webtorrent::Tracker
     module HashParser
       def self.from_json(value : JSON::PullParser) : HashValue
         val = value.read_string
-        if val.size != 20
-          raise InvalidJsonBodyException.new()
-        end
 
         HashValue.new(val)
       end
     end
 
     JSON.mapping({
+      answer:     {type: Offers::Offer, nilable: true},
+      to_peer_id: {type: HashValue, converter: HashParser, nilable: true},
+      offer_id: {type: HashValue, converter: HashParser, nilable: true},
       ip:         {type: String, nilable: true},
       port:       {type: Int32, nilable: true},
       numwant:    {type: Int64, nilable: true},
@@ -57,7 +57,7 @@ module Webtorrent::Tracker
       downloaded: {type: Int64, nilable: true},
       left:       {type: Int64, nilable: true},
       event:      {type: String, nilable: true},
-      action:     {type: String},
+      action:     {type: String, default: "none"},
       info_hash:  {type: HashValue, converter: HashParser},
       peer_id:    {type: HashValue, converter: HashParser},
       offers:     {type: Array(Offers), nilable: true},

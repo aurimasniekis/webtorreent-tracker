@@ -2,6 +2,7 @@ require "json"
 
 module Webtorrent::Tracker
   class WebTorrentException < Exception
+    property cause : Exception?
   	def initialize(@reason : String? = nil, @cause : Exception? = nil, @close_connection : Bool = false)
   		@message = "WebtorrentExcetpion: #{@reason}"
   	end
