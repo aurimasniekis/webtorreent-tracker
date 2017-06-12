@@ -32,11 +32,11 @@ module Webtorrent::Tracker
       when "started"
         announce_started(peer, context, params)
       when "stopped"
-        announce_started(peer, context, params)
+        announce_stopped(peer, context, params)
       when "completed"
-        announce_started(peer, context, params)
+        announce_completed(peer, context, params)
       when "update"
-        announce_started(peer, context, params)
+        announce_update(peer, context, params)
       else
         raise InvalidEventException.new(params.event)
       end
@@ -87,7 +87,7 @@ module Webtorrent::Tracker
         return announce_started(peer, context, params)
       end
 
-      if peer.completed
+      if peer.complete
         return announce_update(peer, context, params)
       end
 

@@ -122,7 +122,6 @@ module Webtorrent::Tracker
 
           @peer_manager.send_to_peer(params.info_hash.hex, params.to_peer_id.as(WebtorrentMessage::HashValue).hex, message.to_json)
         end
-        # puts response.to_json
     end
 
     def on_scrape(params : WebtorrentMessage)
